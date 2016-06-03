@@ -38,6 +38,8 @@ class PDFKit(object):
         self.configuration = (Configuration() if configuration is None
                               else configuration)
 
+        self.wkhtmltopdf = self.configuration.wkhtmltopdf
+
         if not isinstance(self.wkhtmltopdf, list):
             self.wkhtmltopdf = [self.wkhtmltopdf, ]
 
