@@ -37,12 +37,17 @@ class PDFKit(object):
         self.source = Source(url_or_file, type_)
         self.configuration = (Configuration() if configuration is None
                               else configuration)
-        self.wkhtmltopdf = self.configuration.wkhtmltopdf.decode('utf-8')
+
+        if not isinstance(self.wkhtmltopdf, list):
+            self.wkhtmltopdf = [self.wkhtmltopdf, ]
 
         self.options = dict()
         if self.source.isString():
             self.options.update(self._find_options_in_meta(url_or_file))
-        if options is not None: self.options.update(options)
+
+        if options is not None:
+            self.options.update(options)
+
         self.options = self._normalize_options(self.options)
 
         toc = {} if toc is None else toc
@@ -55,7 +60,7 @@ class PDFKit(object):
         if self.css:
             self._prepend_css(self.css)
 
-        args = [self.wkhtmltopdf]
+        args = self.wkhtmltopdf
 
         args += list(chain.from_iterable(list(self.options.items())))
         args = [_f for _f in args if _f]
@@ -152,7 +157,7 @@ class PDFKit(object):
         normalized_options = {}
 
         for key, value in list(options.items()):
-            if not '--' in key:
+            if '--' not in key:
                 normalized_key = '--%s' % self._normalize_arg(key)
             else:
                 normalized_key = self._normalize_arg(key)
@@ -202,8 +207,8 @@ class PDFKit(object):
         returns:
           dict: {config option: value}
         """
-        if (isinstance(content, io.IOBase)
-                or content.__class__.__name__ == 'StreamReaderWriter'):
+        if (isinstance(content, io.IOBase) or
+                content.__class__.__name__ == 'StreamReaderWriter'):
             content = content.read()
 
         found = {}
